@@ -1,0 +1,61 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Outfit", sans-serif;
+}
+
+@layer base {
+  body {
+    @apply bg-neutral-950 text-neutral-100 min-h-screen;
+    background: radial-gradient(circle at 50% -20%, #450a0a 0%, #0a0a0a 100%);
+  }
+}
+
+.bg-ai-gradient {
+  background: linear-gradient(135deg, #ef4444 0%, #7f1d1d 100%);
+}
+
+.text-ai-gradient {
+  background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.glass-card {
+  @apply bg-neutral-900/50 backdrop-blur-xl border border-neutral-800/50 rounded-2xl;
+}
+
+/* Date picker customization */
+.react-datepicker-wrapper {
+  width: 100%;
+}
+
+.react-datepicker {
+  @apply bg-neutral-900 border border-neutral-700 text-white font-sans rounded-xl overflow-hidden shadow-2xl;
+}
+
+.react-datepicker__header {
+  @apply bg-neutral-800 border-neutral-700;
+}
+
+.react-datepicker__current-month, 
+.react-datepicker__day-name, 
+.react-datepicker__day {
+  @apply text-neutral-100;
+}
+
+.react-datepicker__day:hover {
+  @apply bg-red-600;
+}
+
+.react-datepicker__day--selected {
+  @apply bg-red-700;
+}
+
+.react-datepicker__day--disabled {
+  @apply text-neutral-600;
+}
+
+

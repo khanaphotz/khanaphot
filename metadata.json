@@ -1,0 +1,9 @@
+{
+  "name": "[DMK] Room Reservation",
+  "description": "Multi-room booking and management system for Bangkok University School of Business Administration. Includes rooms like DEBI Lab and AI Studio by DMK.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone",
+    "geolocation"
+  ]
+}

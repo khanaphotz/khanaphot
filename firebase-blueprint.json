@@ -1,0 +1,165 @@
+{
+  "entities": {
+    "Admin": {
+      "title": "Admin",
+      "description": "An administrator record",
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "description": "The email address of the administrator"
+        },
+        "addedBy": {
+          "type": "string",
+          "description": "Email of the admin who added this user"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when the admin was added"
+        }
+      },
+      "required": ["email", "addedBy", "createdAt"]
+    },
+    "Booking": {
+      "title": "Booking",
+      "description": "A room booking record",
+      "type": "object",
+      "properties": {
+        "roomId": {
+          "type": "string",
+          "description": "ID of the room being booked"
+        },
+        "roomName": {
+          "type": "string",
+          "description": "Name/Location of the room at the time of booking"
+        },
+        "date": {
+          "type": "string",
+          "description": "The date of the booking (YYYY-MM-DD)"
+        },
+        "startTime": {
+          "type": "string",
+          "description": "The start time of the booking (HH:mm)"
+        },
+        "endTime": {
+          "type": "string",
+          "description": "The end time of the booking (HH:mm)"
+        },
+        "fullName": {
+          "type": "string",
+          "description": "Full name of the person booking"
+        },
+        "phoneNumber": {
+          "type": "string",
+          "description": "Contact phone number"
+        },
+        "department": {
+          "type": "string",
+          "description": "Department or Faculty"
+        },
+        "reason": {
+          "type": "string",
+          "description": "Reason for using the room"
+        },
+        "guestCount": {
+          "type": "number",
+          "description": "Number of people using the room"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["active", "cancelled"],
+          "description": "Status of the booking"
+        },
+        "userEmail": {
+          "type": "string",
+          "description": "Email of the user who made the booking"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when the booking was created"
+        }
+      },
+      "required": ["roomId", "roomName", "date", "startTime", "endTime", "fullName", "phoneNumber", "department", "reason", "guestCount", "status", "userEmail", "createdAt"]
+    },
+    "Room": {
+      "title": "Room",
+      "description": "A bookable room record",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Name of the room (e.g. DEBI Lab)"
+        },
+        "location": {
+          "type": "string",
+          "description": "Location of the room (e.g. A7-109)"
+        },
+        "capacity": {
+          "type": "number",
+          "description": "Maximum capacity of the room"
+        },
+        "isActive": {
+          "type": "boolean",
+          "description": "Whether the room is currently available for booking"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when the room was added"
+        }
+      },
+      "required": ["name", "location", "capacity", "isActive", "createdAt"]
+    },
+    "StaffEmail": {
+      "title": "Staff Email",
+      "description": "Email address for housekeeping/staff notifications",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string" },
+        "name": { "type": "string" },
+        "role": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["email", "createdAt"]
+    },
+    "Notification": {
+      "title": "Notification",
+      "description": "A record of an email notification to be sent or already sent",
+      "type": "object",
+      "properties": {
+        "recipientEmail": { "type": "string" },
+        "recipientName": { "type": "string" },
+        "subject": { "type": "string" },
+        "body": { "type": "string" },
+        "bookingId": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "sent", "failed"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["recipientEmail", "subject", "body", "bookingId", "status", "createdAt"]
+    }
+  },
+  "firestore": {
+    "bookings/{bookingId}": {
+      "schema": "Booking",
+      "description": "Room booking records"
+    },
+    "admins/{email}": {
+      "schema": "Admin",
+      "description": "List of administrators"
+    },
+    "rooms/{roomId}": {
+      "schema": "Room",
+      "description": "Bookable rooms configuration"
+    },
+    "staff_emails/{staffId}": {
+      "schema": "StaffEmail",
+      "description": "List of staff emails for notifications"
+    },
+    "notifications/{notificationId}": {
+      "schema": "Notification",
+      "description": "Queue of notifications to be sent"
+    }
+  }
+}

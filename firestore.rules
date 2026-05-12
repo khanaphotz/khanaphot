@@ -1,0 +1,142 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // 0. Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- Helpers ---
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email == 'admin@bu.ac.th' ||
+        request.auth.token.email == 'medisci.tak@gmail.com' ||
+        request.auth.token.email == 'khanaphot.w@bu.ac.th' ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.token.email))
+      );
+    }
+
+    function isBUUser() {
+      return isSignedIn() && (
+        request.auth.token.email.matches('^.*@bu\\.ac\\.th$') || 
+        isAdmin()
+      );
+    }
+
+    // --- Developer Override ---
+    match /{document=**} {
+      allow read, write: if isSignedIn() && request.auth.token.email == 'medisci.tak@gmail.com';
+    }
+
+    // Allow test connection
+    match /test/connection {
+      allow read: if isSignedIn();
+    }
+
+    function isOwner(data) {
+      return isBUUser() && data.userEmail == request.auth.token.email;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // --- Entity Validations ---
+    function isValidBooking(data) {
+      let requiredFields = [
+        'roomId', 'roomName', 'date', 'startTime', 'endTime', 'fullName', 'phoneNumber', 
+        'department', 'reason', 'guestCount', 'status', 'userEmail', 'createdAt'
+      ];
+      return data.keys().hasAll(requiredFields) &&
+      data.keys().size() >= 13 &&
+      data.keys().size() <= 15 &&
+      data.roomId is string &&
+      data.date is string && data.date.matches('^\\d{4}-\\d{2}-\\d{2}$') &&
+      data.startTime is string && data.startTime.matches('^\\d{2}:\\d{2}$') &&
+      data.endTime is string && data.endTime.matches('^\\d{2}:\\d{2}$') &&
+      data.status in ['active', 'cancelled'];
+    }
+
+    function isValidRoom(data) {
+      return data.keys().hasAll(['name', 'location', 'capacity', 'isActive', 'createdAt']) &&
+             data.keys().size() == 5 &&
+             data.name is string && data.name.size() > 0 &&
+             data.location is string &&
+             data.capacity is number &&
+             data.isActive is bool;
+    }
+
+    function isValidAdmin(data) {
+      return data.keys().hasAll(['email', 'addedBy', 'createdAt']) &&
+             data.keys().size() == 3 &&
+             data.email is string &&
+             data.addedBy is string &&
+             data.createdAt == request.time;
+    }
+
+    // --- Collection Routes ---
+    match /rooms/{roomId} {
+      allow read: if isBUUser();
+      allow write: if isAdmin() && (request.method == 'delete' || isValidRoom(incoming()));
+    }
+
+    match /admins/{email} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin() && (request.method == 'delete' || isValidAdmin(incoming()));
+    }
+
+    match /bookings/{bookingId} {
+      allow get: if isBUUser();
+      
+      allow list: if isBUUser() && (
+        isAdmin() || 
+        resource.data.status == 'active' || 
+        resource.data.userEmail == request.auth.token.email
+      );
+
+      allow create: if isBUUser() && 
+        isValidBooking(incoming()) && 
+        incoming().userEmail == request.auth.token.email &&
+        incoming().createdAt == request.time &&
+        isValidId(bookingId);
+
+      allow update: if isBUUser() && (
+        // Admin update anything
+        isAdmin() ||
+        // User Cancel Own Booking
+        (
+          isOwner(existing()) && 
+          incoming().status == 'cancelled' &&
+          existing().status == 'active' &&
+          incoming().diff(existing()).affectedKeys().hasOnly(['status', 'updatedAt'])
+        )
+      );
+
+      allow delete: if isAdmin();
+    }
+
+    match /staff_emails/{staffId} {
+      allow read: if isBUUser();
+      allow write: if isAdmin();
+    }
+
+    match /notifications/{notificationId} {
+      allow read: if isAdmin();
+      allow create: if isBUUser();
+      allow update, delete: if isAdmin();
+    }
+  }
+}
